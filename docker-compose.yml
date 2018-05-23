@@ -1,0 +1,9 @@
+version: '3.4'
+services:
+    
+    civitas:
+        container_name: civitas
+        image: citivtas-image
+        build: .
+        tty: true
+        network_mode: "host"
