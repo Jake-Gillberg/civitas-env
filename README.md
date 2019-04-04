@@ -15,55 +15,62 @@ see the juicy details print to console, and check out the logs.
 ### supervisor
  - specifies the ballot design
  - specifies the tellers
- - start and stop the election.
+ - start and stop the election
+ - selects policy for re-votes
 
 ### registrar
  - authorizes voters
-
+ 
 ### registration tellers
  - Generates credentials voters use to cast their votes
+ - Each teller holds a piece of each voter credential
+ - private voter credential can only be leaked through collusion of each teller
 
 ### tabulation tellers
  - tally votes
 
 ### Voters
- - have a Registration key
- - have a Designation key
+ - have a Registration key (used to identify themselves to the registration teller)
+ - have a Designation key (used to generate their credential)
+ - After registration, will have a credential used to cast votes
+ - Can create fake credentials which, if used to vote, will be quietly eliminated from the tally to hand to a coercer
  
 ## Election cycle
 
 ### Registration
- - Registration teller authenticates a voter using their registration key
- - Voter and registration teller run a protocol to release teller's share of the private credential
- - Voter combines all private credential shares to construct their entire private credential
+ - Registrar
+    - posts a list of all valid voters along with the public registration keys
+ - Registration tellers
+    - generate voter credentials used to authenticate votes anonymously. Each credential is associated with a single voter.
+    - public part of each voter credential is posted
+    - Each teller stores a distinct piece of the private voter credential, to be released to the voter in the next step
+ - Registration tellers + voter
+    - voter identifies themselves to reg teller with Registration key
+    - voter uses designation key to run protocol with reg teller to release piece of their private credential
+ - Voter
+    - combines credential pieces from each reg teller to create their complete credential
 
 ### Setup
  - Supervisor
     - posts ballot
     - identifies tellers by public keys
     - selects a policy on how to tally re-votes
- - Registrar
-    - posts electoral roll which contains list of valid voters along with the public (registration?) keys
  - Tabulation tellers
     - collectively generate a public key and post it
       (Data encrypted with the collective tabulation key can only be decrypted with the participation of all tabulation tellers)
- - Registration tellers
-    - generate voter credentials used to authenticate votes anonymously. Each credential is associated with a single voter.
-      (a credential consists of a priv-pub pair)
-    - public part of each voter credential is posted
-    - share of private part of voter credential is stored by each teller. (private credential can only be shared or leaked if all registration tellers collude)
 
 ### voting phase
   - voter's private credential and choice are encrypted and posted along with a proof that the vote is well-formed to some or all ballot boxes
   - voter may subit more that one vote per credential (If revotes are allowed, then the voter must include a proof in later votes to indicate which earlier votes are being replaced. This proof must demonstrate knowledge of the credential and choice used in both votes, preventing an adversary from revoting on behalf of a voter.)
   
 ### tabulation phase
-  - Verify proof of well-formed votes
-  - eliminate duplicates in line with revoting policy (TODO: who verifies revoting policy was followed??)
-  - Anonymize. Tellers run steps of randomized mix-net in turn to anonymize pub credentials and votes 
-  - Eliminate unauthorized votes by comparing anonymized votes and credentials (TODO: Why does this happen after previous step?)
-  - choices decrypted (credentials not decrypted) and posted
-  - tab tellers post proofs that they are following the protocol
+  - Tabulation tellers
+    - Verify proof of well-formed votes
+    - eliminate duplicates in line with revoting policy (TODO: who verifies revoting policy was followed??)
+    - Anonymize. Tellers run steps of randomized mix-net in turn to anonymize pub credentials and votes 
+    - Eliminate unauthorized votes by comparing anonymized votes and credentials (TODO: Why does this happen after previous step?)
+    - choices decrypted (credentials not decrypted) and posted
+    - tab tellers post proofs that they are following the protocol
 
 ### Verification
   - Anyone can uses tab teller proofs to verify outcome follows from votes
